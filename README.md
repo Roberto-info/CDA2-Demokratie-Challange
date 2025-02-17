@@ -9,6 +9,9 @@ https://python-poetry.org/docs/
 or with brew: 
 brew install poetry 
 
+To create venv in folder:
+poetry config virtualenvs.in-project true     
+
 Then you are able to initialize:
 poetry init 
 poetry install
