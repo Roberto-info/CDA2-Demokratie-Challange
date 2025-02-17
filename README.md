@@ -9,12 +9,15 @@ https://python-poetry.org/docs/
 or with brew: 
 brew install poetry 
 
-To create venv in folder:
-poetry config virtualenvs.in-project true     
+or with pip
+pip install poetry
+
+To set the directory of the venv
+- poetry config virtualenvs.in-project true     
 
 Then you are able to initialize:
-poetry init 
-poetry install
+- poetry init 
+- poetry install
 
 To use poetry with the notebooks use:
 -  poetry add ipykernel 
