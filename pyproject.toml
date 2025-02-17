@@ -1,0 +1,17 @@
+[project]
+name = "cda2-demokratie-challange"
+version = "0.1.0"
+description = "This repo is for the challange module cda2 and is about democratic processes"
+authors = [
+    {name = "roberto",email = "roberto.fazekas.ges@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ipykernel (>=6.29.5,<7.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
