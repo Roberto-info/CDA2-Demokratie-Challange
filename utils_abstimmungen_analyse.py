@@ -234,13 +234,16 @@ def create_color_scheme(data_values: pd.Series,
         # Verwende den Datenbereich mit kleinem Puffer
         vmin = max(0, clean_values.min() - 5)
         vmax = min(100, clean_values.max() + 5)
-    
-    # Stelle sicher, dass der Bereich sinnvoll ist
+      # Stelle sicher, dass der Bereich sinnvoll ist
     if vmax <= vmin:
         vmin, vmax = 0, 100
-    
-    norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
-    cmap = cm.get_cmap(color_map)
+      norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    try:
+        # Neue Matplotlib-API (3.7+)
+        cmap = plt.colormaps[color_map]
+    except (AttributeError, KeyError):
+        # Fallback für ältere Versionen
+        cmap = plt.cm.get_cmap(color_map)
     sm = cm.ScalarMappable(cmap=cmap, norm=norm)
     sm._A = []  # Dummy für ScalarMappable
     
