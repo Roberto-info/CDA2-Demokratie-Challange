@@ -23,7 +23,7 @@ except ImportError:
 try:
     spec = importlib.util.spec_from_file_location(
         "utils_module", 
-        "utils_analyse_einzelne-abstimmungen.py"
+        "utils_analyse_einzelne_abstimmungen.py"
     )
     utils = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(utils)

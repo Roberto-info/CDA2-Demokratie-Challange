@@ -152,7 +152,7 @@ def filter_for_abstimmung(df: pd.DataFrame, abstimmung: str) -> pd.DataFrame:
 
 def merge_data_to_plot(df_filtered_abstimmungen: pd.DataFrame, 
                       df_schweizer_karte: gpd.GeoDataFrame,
-                      kanton_map: Dict[str, str] = None) -> gpd.GeoDataFrame:
+                      kanton_map: Dict[str, str] = None, index_abstimmung=0) -> gpd.GeoDataFrame:
     """
     Verknüpft Abstimmungsdaten mit Kartendaten für die Visualisierung.
     
@@ -173,11 +173,7 @@ def merge_data_to_plot(df_filtered_abstimmungen: pd.DataFrame,
     if kanton_map is None:
         kanton_map = create_canton_mapping()
     
-    # Falls mehrere Zeilen vorhanden sind, nimm die erste
-    if len(df_filtered_abstimmungen) > 1:
-        print(f"⚠️ Mehrere Abstimmungen gefunden, verwende die erste.")
-    
-    erste_zeile = df_filtered_abstimmungen.iloc[0]
+    erste_zeile = df_filtered_abstimmungen.iloc[index_abstimmung]
     
     # Entferne das '-japroz' Suffix von den Spaltenbezeichnungen
     ja_stimmen = erste_zeile.rename(lambda x: x.replace('-japroz', ''))
@@ -256,7 +252,8 @@ def plot_abstimmungen_schweiz(df_abstimmungen: pd.DataFrame,
                             abstimmung: str,
                             figsize: Tuple[int, int] = (14, 10),
                             color_map: str = 'RdYlGn',
-                            show_statistics: bool = True) -> None:
+                            show_statistics: bool = True, 
+                            index_abstimmung: int = 0) -> None:
     """
     Erstellt eine Karte der Schweiz mit Abstimmungsergebnissen.
     
@@ -267,13 +264,14 @@ def plot_abstimmungen_schweiz(df_abstimmungen: pd.DataFrame,
         figsize (Tuple[int, int]): Grösse der Grafik
         color_map (str): Colormap für die Darstellung
         show_statistics (bool): Ob Statistiken angezeigt werden sollen
+        index_abstimmung (int): Index der zu analysierenden Abstimmung (bei mehreren Treffern)
     """
     try:
         # Filtere Abstimmungsdaten
         filtered_abstimmungen = filter_for_abstimmung(df_abstimmungen, abstimmung)
         
         # Verknüpfe mit Kartendaten
-        data_to_plot = merge_data_to_plot(filtered_abstimmungen, schweizer_karte)
+        data_to_plot = merge_data_to_plot(filtered_abstimmungen, schweizer_karte, index_abstimmung=index_abstimmung)
         
         # Erstelle Farbschema
         norm, sm = create_color_scheme(data_to_plot['Ja-Prozent'], color_map)
@@ -291,7 +289,8 @@ def plot_abstimmungen_schweiz(df_abstimmungen: pd.DataFrame,
             legend=False,
             missing_kwds={'color': 'lightgrey', 'alpha': 0.5}
         )
-          # Füge Colorbar hinzu
+        
+        # Füge Colorbar hinzu
         cbar = fig.colorbar(sm, ax=ax, shrink=0.6, pad=0.02)
         cbar.set_label("Ja-Stimmen (%)", fontsize=12)
         
@@ -323,7 +322,8 @@ def plot_abstimmungen_schweiz(df_abstimmungen: pd.DataFrame,
                 ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, 
                        fontsize=10, verticalalignment='top',
                        bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.8))
-          # Layout optimieren
+        
+        # Layout optimieren
         fig.subplots_adjust(right=0.85)
         plt.tight_layout()
         plt.show()
