@@ -223,8 +223,7 @@ def create_color_scheme(data_values: pd.Series,
         
     Returns:
         Tuple[mcolors.Normalize, cm.ScalarMappable]: Normalizer und ScalarMappable
-    """
-    # Entferne NaN-Werte für Min/Max-Berechnung
+    """    # Entferne NaN-Werte für Min/Max-Berechnung
     clean_values = data_values.dropna()
     
     if len(clean_values) == 0:
@@ -234,10 +233,12 @@ def create_color_scheme(data_values: pd.Series,
         # Verwende den Datenbereich mit kleinem Puffer
         vmin = max(0, clean_values.min() - 5)
         vmax = min(100, clean_values.max() + 5)
-      # Stelle sicher, dass der Bereich sinnvoll ist
+    
+    # Stelle sicher, dass der Bereich sinnvoll ist
     if vmax <= vmin:
         vmin, vmax = 0, 100
-      norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+    
+    norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
     try:
         # Neue Matplotlib-API (3.7+)
         cmap = plt.colormaps[color_map]

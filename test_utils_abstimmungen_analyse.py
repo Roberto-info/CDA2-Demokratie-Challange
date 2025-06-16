@@ -357,9 +357,9 @@ class TestEdgeCases(unittest.TestCase):
             'geometry': [
                 Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
                 Polygon([(1, 0), (2, 0), (2, 1), (1, 1)])
-            ]
-        })
-          filtered = filter_for_abstimmung(data_with_strings, 'Test')
+            ]        })
+        
+        filtered = filter_for_abstimmung(data_with_strings, 'Test')
         merged = merge_data_to_plot(filtered, map_data)
         # Sollte numerische Konvertierung handhaben
         self.assertTrue(pd.api.types.is_numeric_dtype(merged['Ja-Prozent']))
