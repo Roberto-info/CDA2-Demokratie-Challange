@@ -248,13 +248,15 @@ def calculate_correlation_time_acceptance(df: pd.DataFrame) -> Tuple[float, floa
     
     return correlation, p_value, interpretation
 
-
 def analyze_party_support(df: pd.DataFrame, 
                         liberal_parties: List[str] = None,
                         conservative_parties: List[str] = None,
                         figsize: Tuple[int, int] = (12, 6)) -> None:
     """
     Analysiert die Parteiunterstützung für gesellschaftsorientierte Abstimmungen.
+    
+    Die Unterstützung wird als prozentualer Anteil der Ja-Parolen
+    innerhalb des liberalen und konservativen Lagers für jede Abstimmung berechnet.
     
     Args:
         df (pd.DataFrame): Abstimmungsdatensatz
@@ -270,45 +272,62 @@ def analyze_party_support(df: pd.DataFrame,
     
     society_votes = df[df['society_oriented'] == True].copy()
     
-    # Konvertiere Parteispalten zu numerischen Werten
+    # Erstelle ein temporäres DataFrame für die Berechnung
+    support_df = pd.DataFrame(index=society_votes.index)
+
+    # Konvertiere Parolen in einen Unterstützungswert (1 für Ja, 0 für Nein, NaN für andere)
     for party in liberal_parties + conservative_parties:
         if party in society_votes.columns:
-            society_votes[party] = pd.to_numeric(society_votes[party], errors='coerce')
+            # 1 -> 1 (Ja)
+            # 2 -> 0 (Nein)
+            # 3 -> NaN (Stimmfreigabe)
+            # 9999 -> NaN (Keine)
+            support_df[party] = pd.to_numeric(society_votes[party], errors='coerce').replace({1: 1, 2: 0, 3: np.nan, 9999: np.nan})
 
-    # Berechne durchschnittliche Unterstützung
-    available_liberal_parties = [p for p in liberal_parties if p in society_votes.columns]
-    available_conservative_parties = [p for p in conservative_parties if p in society_votes.columns]
+    # Berechne durchschnittliche Unterstützung als Prozentsatz
+    available_liberal_parties = [p for p in liberal_parties if p in support_df.columns]
+    available_conservative_parties = [p for p in conservative_parties if p in support_df.columns]
 
     if available_liberal_parties:
-        society_votes['liberal_support'] = society_votes[available_liberal_parties].mean(axis=1)
+        # mean() ignoriert NaNs standardmässig, was korrekt ist.
+        society_votes['liberal_support'] = support_df[available_liberal_parties].mean(axis=1) * 100
     
     if available_conservative_parties:
-        society_votes['conservative_support'] = society_votes[available_conservative_parties].mean(axis=1)
+        society_votes['conservative_support'] = support_df[available_conservative_parties].mean(axis=1) * 100
 
     # Plotte den Trend
     if 'liberal_support' in society_votes.columns and 'conservative_support' in society_votes.columns:
         plt.figure(figsize=figsize)
-        sns.regplot(
-            data=society_votes, 
-            x='year', 
-            y='liberal_support', 
-            label='Liberale Parteien', 
-            scatter=True, 
-            line_kws={"color": "blue"}
-        )
-        sns.regplot(
-            data=society_votes, 
-            x='year', 
-            y='conservative_support', 
-            label='Konservative Parteien', 
-            scatter=True, 
-            line_kws={"color": "red"}
-        )
-        plt.title('Parteiunterstützung für gesellschaftsorientierte Abstimmungen')
-        plt.xlabel('Jahr')
-        plt.ylabel('Durchschnittliche Unterstützungsrate (%)')
-        plt.legend()
-        plt.tight_layout()
-        plt.show()
+        
+        # Filtere Zeilen, in denen beide Support-Werte NaN sind, um leere Plots zu vermeiden
+        plot_data = society_votes.dropna(subset=['liberal_support', 'conservative_support'], how='all')
+
+        if not plot_data.empty:
+            sns.regplot(
+                data=plot_data, 
+                x='year', 
+                y='liberal_support', 
+                label='Liberale Parteien', 
+                scatter=True, 
+                scatter_kws={'alpha':0.3},
+                line_kws={"color": "blue"}
+            )
+            sns.regplot(
+                data=plot_data, 
+                x='year', 
+                y='conservative_support', 
+                label='Konservative Parteien', 
+                scatter=True, 
+                scatter_kws={'alpha':0.3},
+                line_kws={"color": "red"}
+            )
+            plt.title('Parteiunterstützung für gesellschaftsorientierte Abstimmungen')
+            plt.xlabel('Jahr')
+            plt.ylabel('Anteil Ja-Parolen im Lager (%)')
+            plt.legend()
+            plt.tight_layout()
+            plt.show()
+        else:
+            print("Nicht genügend Daten für Parteiunterstützungsanalyse vorhanden.")
     else:
         print("Nicht genügend Daten für Parteiunterstützungsanalyse vorhanden.")
