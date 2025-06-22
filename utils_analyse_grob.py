@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from fontTools.misc.textTools import tostr
 from scipy import stats
 from typing import List, Dict, Tuple, Optional
 
@@ -46,13 +47,46 @@ def load_and_prepare_data(file_path: str) -> pd.DataFrame:
         raise pd.errors.EmptyDataError("Die Datei ist leer.")
 
 
+def load_and_prepare_data_with_spec_period(file_path: str, years: int) -> pd.DataFrame:
+    """
+    Lädt den Abstimmungsdatensatz und bereitet ihn für die Analyse vor.
+
+    Args:
+        file_path (str): Pfad zur CSV-Datei
+        years (int): zeitraum
+
+    Returns:
+        pd.DataFrame: Vorbereiteter Datensatz mit Datums- und Zeitraumspalten
+
+    Raises:
+        FileNotFoundError: Wenn die Datei nicht gefunden wird
+        pd.errors.EmptyDataError: Wenn die Datei leer ist
+    """
+    try:
+        df = pd.read_csv(file_path, sep=';', low_memory=False)
+
+        # Konvertiere 'datum' sauber
+        df['datum'] = pd.to_datetime(df['datum'], errors='coerce')
+        df['year'] = df['datum'].dt.year
+
+        # Zeitraum-Spalte mit robuster Funktion
+        df['period'] = df['year'].apply(lambda y: assign_specific_period(y, years))
+
+        return df
+
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Datei {file_path} wurde nicht gefunden.")
+    except pd.errors.EmptyDataError:
+        raise pd.errors.EmptyDataError("Die Datei ist leer.")
+
+
 def assign_period(year: float) -> str:
     """
     Weist einem Jahr einen Zeitraum zu.
-    
+
     Args:
         year (float): Jahr als Zahl
-        
+
     Returns:
         str: Zeitraum als String
     """
@@ -68,6 +102,15 @@ def assign_period(year: float) -> str:
         return "1980-2009"
     else:
         return "2010-2025"
+
+
+def assign_specific_period(year, years):
+    if pd.isna(year):
+        return "Unbekannt"
+
+    start = int((year // years) * years)
+    end = start + years - 1
+    return f"{start}–{end}"
 
 
 def identify_society_oriented_votes(df: pd.DataFrame, 
