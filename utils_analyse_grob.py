@@ -112,6 +112,13 @@ def assign_specific_period(year, years):
     end = start + years - 1
     return f"{start}–{end}"
 
+def extract_mid_year(period_str):
+    try:
+        start, end = map(int, period_str.split('–'))
+        return (start + end) // 2
+    except:
+        return None
+
 
 def identify_society_oriented_votes(df: pd.DataFrame, 
                                   social_keywords: List[str] = None) -> pd.DataFrame:
