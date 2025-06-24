@@ -90,9 +90,9 @@ def assign_period(year: float) -> str:
     Returns:
         str: Zeitraum als String
     """
+    year = int(year)
     if pd.isna(year):
         return "Unbekannt"
-    year = int(year)
     if year < 1878:
         return "1848–1877"
     elif year < 1908:
