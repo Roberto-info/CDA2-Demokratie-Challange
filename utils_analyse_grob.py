@@ -67,7 +67,7 @@ def load_and_prepare_data_with_spec_period(file_path: str, years: int) -> pd.Dat
 
         # Konvertiere 'datum' sauber
         df['datum'] = pd.to_datetime(df['datum'], errors='coerce')
-        df['year'] = df['datum'].dt.year
+        df['year'] = df['datum'].dt.year.astype('Int64')
 
         # Zeitraum-Spalte mit robuster Funktion
         df['period'] = df['year'].apply(lambda y: assign_specific_period(y, years))
@@ -92,25 +92,30 @@ def assign_period(year: float) -> str:
     """
     if pd.isna(year):
         return "Unbekannt"
-    elif year < 1920:
-        return "1893-1919"
-    elif year < 1950:
-        return "1920-1949"
-    elif year < 1980:
-        return "1950-1979"
-    elif year < 2010:
-        return "1980-2009"
+    year = int(year)
+    if year < 1878:
+        return "1848–1877"
+    elif year < 1908:
+        return "1878–1907"
+    elif year < 1938:
+        return "1908–1937"
+    elif year < 1968:
+        return "1938–1967"
+    elif year < 1998:
+        return "1968–1997"
     else:
-        return "2010-2025"
+        return "1998–2025"
 
 
-def assign_specific_period(year, years):
+def assign_specific_period(year, years, start_year=1848):
     if pd.isna(year):
         return "Unbekannt"
 
-    start = int((year // years) * years)
-    end = start + years - 1
-    return f"{start}–{end}"
+    year = int(year)
+    offset = (year - start_year) // years
+    period_start = start_year + offset * years
+    period_end = period_start + years - 1
+    return f"{period_start}–{period_end}"
 
 def extract_mid_year(period_str):
     try:
